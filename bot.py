@@ -12,15 +12,7 @@ import os
 import time
 from typing import List, Optional
 
-import discord
-from discord.ext import commands
 from dotenv import load_dotenv
-
-from core.config import BotConfig, JsonStore
-from core.database import Database
-from core.groq_client import GroqClient
-from core.memory import ConversationMemory
-from core.personality import PersonalityManager
 
 # Load credentials from either .env or the legacy `env` file
 load_dotenv(".env")
@@ -37,9 +29,10 @@ DATA_ENV = os.getenv("DATA_DIR", "").strip()
 DATA_DIR = os.path.abspath(DATA_ENV) if DATA_ENV else os.getcwd()
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# ChromaDB downloads its embedding model (~80MB) to <HOME>/.cache/chroma/onnx_models
-# on first use. If we're using a persistent data dir, park HOME there so the model
-# and huggingface caches survive restarts instead of re-downloading every deploy.
+# ChromaDB resolves its onnx-model cache path (<HOME>/.cache/chroma/onnx_models)
+# AT IMPORT TIME via Path.home(). It must therefore be set BEFORE any chromadb
+# import happens below, otherwise the model re-downloads to the ephemeral
+# container home on every deploy.
 if DATA_ENV:
     os.environ["HOME"] = DATA_DIR
     os.makedirs(os.path.join(DATA_DIR, ".cache", "chroma", "onnx_models"), exist_ok=True)
@@ -50,6 +43,16 @@ logging.basicConfig(
 )
 log = logging.getLogger("manubot")
 log.info("Data directory: %s", DATA_DIR)
+
+# NOTE: keep any import that pulls in chromadb BELOW the HOME override above.
+import discord  # noqa: E402
+from discord.ext import commands  # noqa: E402
+
+from core.config import BotConfig, JsonStore  # noqa: E402
+from core.database import Database  # noqa: E402
+from core.groq_client import GroqClient  # noqa: E402
+from core.memory import ConversationMemory  # noqa: E402
+from core.personality import PersonalityManager  # noqa: E402
 
 OWNER_IDS = {int(x) for x in os.getenv("OWNER_IDS", "0").split(",") if x.strip().lstrip("-").isdigit()}
 if OWNER_IDS:

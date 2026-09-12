@@ -9,6 +9,9 @@ import uuid
 from typing import Dict, Iterable, List, Optional
 
 import chromadb
+from chromadb.utils.embedding_functions.onnx_mini_lm_l6_v2 import ONNXMiniLM_L6_V2
+
+ONNX_PATH = ONNXMiniLM_L6_V2.DOWNLOAD_PATH
 
 log = logging.getLogger("manubot.db")
 
@@ -39,6 +42,7 @@ class Database:
         """Trigger the embedding model download so first real query isn't slow."""
         if self._warmed:
             return True
+        log.info("Embedding model cache: %s", ONNX_PATH)
         try:
             self.query("friend_messages", "warmup", n_results=1)
             self._warmed = True
