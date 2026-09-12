@@ -147,8 +147,9 @@ class ManuBot(commands.Bot):
         # regardless of which server invited it or what GUILD_ID says.
         for guild in self.guilds:
             try:
-                await self.tree.sync(guild=discord.Object(id=guild.id))
-                log.info("Synced commands to guild %s", guild.id)
+                registered = await self.tree.sync(guild=discord.Object(id=guild.id))
+                names = [c.name for c in registered] if registered else []
+                log.info("Synced %d commands to guild %s: %s", len(names), guild.id, ", ".join(names) or "(none)")
             except Exception as exc:  # noqa: BLE001
                 log.warning("guild sync failed for %s: %s", guild.id, exc)
 
