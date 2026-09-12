@@ -143,10 +143,14 @@ class ManuBot(commands.Bot):
         await asyncio.to_thread(self.db.warm_up)
         log.info("Embedder warm-up complete")
 
-        # Sync slash commands to EVERY guild the bot is in so they always work,
-        # regardless of which server invited it or what GUILD_ID says.
+        # Sync commands to EVERY guild the bot is in so they always work.
+        # NOTE: commands are declared as *global*, and discord.py's guild sync
+        # only posts commands explicitly bound to that guild — a bare guild sync
+        # would POST an empty array (wiping commands). copy_global_to() clones
+        # the globals into the guild's scope first, making them appear instantly.
         for guild in self.guilds:
             try:
+                self.tree.copy_global_to(guild=guild)
                 registered = await self.tree.sync(guild=discord.Object(id=guild.id))
                 names = [c.name for c in registered] if registered else []
                 log.info("Synced %d commands to guild %s: %s", len(names), guild.id, ", ".join(names) or "(none)")
