@@ -140,15 +140,17 @@ class ManuBot(commands.Bot):
         await asyncio.to_thread(self.db.warm_up)
         log.info("Embedder warm-up complete")
 
-        # register commands for the configured guild (fast sync)
-        if GUILD_ID:
+        # Sync slash commands to EVERY guild the bot is in so they always work,
+        # regardless of which server invited it or what GUILD_ID says.
+        for guild in self.guilds:
             try:
-                target = discord.Object(id=GUILD_ID)
-                await self.tree.sync(guild=target)
-                log.info("Synced commands to guild %s", GUILD_ID)
+                await self.tree.sync(guild=discord.Object(id=guild.id))
+                log.info("Synced commands to guild %s", guild.id)
             except Exception as exc:  # noqa: BLE001
-                log.warning("guild sync failed: %s", exc)
-        else:
+                log.warning("guild sync failed for %s: %s", guild.id, exc)
+
+        # Optionally also publish globally (takes up to 1h to propagate).
+        if os.getenv("SYNC_GLOBAL", "0") == "1":
             await self.tree.sync()
             log.info("Synced global commands")
 
