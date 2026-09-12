@@ -1,0 +1,1 @@
+"""Core services for ManuBot: database, LLM, memory, config, personalities."""

@@ -1,0 +1,38 @@
+# secrets
+.env
+.envrc
+env
+*.local
+
+# virtual envs
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# local databases & data
+chroma_db/
+chroma_db_extract/
+chroma_db.zip
+*.sqlite3
+conversation_history.json
+server_configs.json
+message_doc_map.json
+incidents.json
+friend_messages.json
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.eggs/
+build/
+dist/
+*.egg-info/
+
+# logs
+*.log
+logs/
